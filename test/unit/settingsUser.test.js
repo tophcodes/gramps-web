@@ -127,3 +127,31 @@ describe('user profile settings', () => {
     expect(element._fetchOwnUserDetails).not.toHaveBeenCalled()
   })
 })
+
+describe('name format setting', () => {
+  it('stores the selected format for this tree only', () => {
+    const element = new GrampsjsViewSettingsUser()
+    const updateSettings = vi.fn()
+    element.appState = {updateSettings, settings: {}}
+
+    element._handleNameFormatSelected({target: {value: '%l %f'}})
+
+    expect(updateSettings).toHaveBeenCalledWith({nameFormat: '%l %f'}, true)
+  })
+
+  it('offers only the formats the server marks active', async () => {
+    const element = new GrampsjsViewSettingsUser()
+    const apiGet = vi.fn().mockResolvedValue({
+      data: [
+        {number: 0, name: 'Default', format: '', active: true},
+        {number: 1, name: 'Surname, Given', format: '%l, %f %s', active: true},
+        {number: 5, name: 'Patronymic, Given', format: '%y %f', active: false},
+      ],
+    })
+    element.appState = {apiGet, settings: {}}
+
+    await element._fetchNameFormats()
+
+    expect(element._nameFormats.map(format => format.number)).toEqual([0, 1])
+  })
+})

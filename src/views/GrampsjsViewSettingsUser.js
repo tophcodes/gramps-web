@@ -104,6 +104,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
       _userInfo: {type: Object},
       _translations: {type: Array},
       _langLoading: {type: Boolean},
+      _nameFormats: {type: Array},
       _tokenCopied: {type: Boolean},
       _accessTokenStates: {type: Object},
       _pendingAccessTokenScope: {type: String},
@@ -115,6 +116,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
     this._userInfo = {}
     this._translations = []
     this._langLoading = false
+    this._nameFormats = []
     this._tokenCopied = false
     this._accessTokenStates = Object.fromEntries(
       PERSISTENT_ACCESS_TOKEN_SCOPES.map(({scope}) => [
@@ -179,7 +181,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
         <h3>${this._('Select language')}</h3>
         ${this.renderLangSelect()}
         <h3>${this._('Select theme')}</h3>
-        ${this.renderThemeSelect()}
+        ${this.renderThemeSelect()} ${this.renderNameFormatSelect()}
         <h3>${this._('Family tree preferences')}</h3>
         ${this.renderTreePreferences()}
       </grampsjs-collapsible-section>
@@ -228,6 +230,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
     if (this.active) {
       this._fetchOwnUserDetails()
       this._loadAccessTokenStatusesIfNeeded()
+      this._fetchNameFormats()
     }
   }
 
@@ -259,6 +262,41 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
     }
     this._langLoading = false
     this.loading = false
+  }
+
+  renderNameFormatSelect() {
+    const nameFormat = this.appState.settings.nameFormat ?? ''
+    return html`
+      <md-filled-select
+        id="select-name-format"
+        label="${this._('Name format')}"
+        @change="${this._handleNameFormatSelected}"
+      >
+        ${this._nameFormats.map(
+          format => html`
+            <md-select-option
+              value="${format.format}"
+              ?selected="${format.format === nameFormat}"
+              >${format.name}</md-select-option
+            >
+          `
+        )}
+      </md-filled-select>
+    `
+  }
+
+  async _fetchNameFormats() {
+    const data = await this.appState.apiGet('/api/name-formats/')
+    if ('data' in data) {
+      // An inactive format is one Gramps no longer offers, such as a
+      // deprecated built-in.
+      this._nameFormats = data.data.filter(format => format.active)
+    }
+  }
+
+  _handleNameFormatSelected(event) {
+    // Formats are database-specific, so the choice belongs to this tree.
+    this.appState.updateSettings({nameFormat: event.target.value}, true)
   }
 
   renderThemeSelect() {

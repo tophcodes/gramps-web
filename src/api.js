@@ -89,6 +89,15 @@ export function updateSettings(settings, tree = false) {
   fireEvent(window, 'settings:changed')
 }
 
+// A selected name format is only meaningful where the server builds a person
+// profile, so it rides along with those requests and no others.
+export function withNameFormat(endpoint, nameFormat) {
+  if (!nameFormat || !endpoint.includes('profile=')) {
+    return endpoint
+  }
+  return `${endpoint}&name_format=${encodeURIComponent(nameFormat)}`
+}
+
 export function getMapViewport() {
   try {
     const treeId = getTreeId() || 'unknown'

@@ -9,6 +9,7 @@ import {
   apiPutPostDelete,
   updateSettings,
   updateTaskStatus,
+  withNameFormat,
 } from './api.js'
 import {getCurrentTheme} from './theme.js'
 import {fireEvent, makeHandle} from './util.js'
@@ -313,7 +314,9 @@ export function getInitialAppState() {
     apiGet: endpoint => {
       activeGetCount += 1
       notifyCounters()
-      return apiGet(auth, endpoint)
+      // Read the setting per request so a change takes effect without a reload.
+      const {nameFormat} = getSettings()
+      return apiGet(auth, withNameFormat(endpoint, nameFormat))
         .finally(() => {
           activeGetCount = Math.max(0, activeGetCount - 1)
           notifyCounters()

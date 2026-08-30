@@ -8,6 +8,7 @@ import {
   Auth,
   createFirstTree,
   updateTaskStatus,
+  withNameFormat,
 } from '../../src/api.js'
 
 describe('apiGet authentication', () => {
@@ -496,5 +497,23 @@ describe('Auth.signout', () => {
 
     expect(fetch).not.toHaveBeenCalled()
     expect(events[0].detail.redirecting).toBe(false)
+  })
+})
+
+describe('withNameFormat', () => {
+  it('appends the format when the endpoint asks for a profile', () => {
+    expect(withNameFormat('/api/people/?profile=all', '%l %f')).toBe(
+      '/api/people/?profile=all&name_format=%25l%20%25f'
+    )
+  })
+
+  it('leaves the endpoint alone when no format is selected', () => {
+    expect(withNameFormat('/api/people/?profile=all', '')).toBe(
+      '/api/people/?profile=all'
+    )
+  })
+
+  it('leaves the endpoint alone when no profile is requested', () => {
+    expect(withNameFormat('/api/metadata/', '%l %f')).toBe('/api/metadata/')
   })
 })
