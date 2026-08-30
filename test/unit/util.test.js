@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vitest'
 import {
   translate,
   personTitleFromProfile,
+  personProfileDisplayName,
   personDisplayName,
   reportSelectItemLabel,
   reportSelectItemValue,
@@ -80,6 +81,53 @@ describe('personTitleFromProfile', () => {
         name_suffix: 'Jr.',
       })
     ).to.equal('John Smith Jr.')
+  })
+})
+
+describe('personTitleFromProfile with a server-formatted name', () => {
+  it('prefers the name the server formatted', () => {
+    expect(
+      personTitleFromProfile({
+        name_display: 'Nguyễn Thị Hương',
+        name_given: 'Thị Hương',
+        name_surname: 'Nguyễn',
+      })
+    ).to.equal('Nguyễn Thị Hương')
+  })
+
+  it('does not append the suffix a second time', () => {
+    expect(
+      personTitleFromProfile({
+        name_display: 'John Smith Jr.',
+        name_given: 'John',
+        name_surname: 'Smith',
+        name_suffix: 'Jr.',
+      })
+    ).to.equal('John Smith Jr.')
+  })
+
+  it('falls back to given and surname when the server sends none', () => {
+    expect(
+      personTitleFromProfile({name_given: 'John', name_surname: 'Smith'})
+    ).to.equal('John Smith')
+  })
+})
+
+describe('personProfileDisplayName', () => {
+  it('prefers the name the server formatted', () => {
+    expect(
+      personProfileDisplayName({
+        name_display: 'Nguyễn Thị Hương',
+        name_given: 'Thị Hương',
+        name_surname: 'Nguyễn',
+      })
+    ).to.equal('Nguyễn Thị Hương')
+  })
+
+  it('falls back to given and surname when the server sends none', () => {
+    expect(
+      personProfileDisplayName({name_given: 'John', name_surname: 'Smith'})
+    ).to.equal('John Smith')
   })
 })
 

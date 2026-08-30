@@ -77,6 +77,11 @@ export function translate(strings, s) {
 }
 
 export function personTitleFromProfile(personProfile) {
+  // The server applies the name format, including the suffix, so a formatted
+  // name is used as it stands.
+  if (personProfile.name_display) {
+    return personProfile.name_display
+  }
   return `${personProfile.name_given || '…'} ${
     personProfile.name_surname || '…'
   } ${personProfile.name_suffix || ''}`.trim()
@@ -84,6 +89,7 @@ export function personTitleFromProfile(personProfile) {
 
 export function personProfileDisplayName(profile) {
   return (
+    profile?.name_display ||
     [profile?.name_given, profile?.name_surname].filter(Boolean).join(' ') ||
     profile?.name ||
     ''

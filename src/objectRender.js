@@ -30,8 +30,10 @@ export function renderPerson(personProfile) {
       <grampsjs-object-link
         object-type="person"
         gramps-id="${personProfile.gramps_id}"
-        >${personProfile.name_given || '…'}
-        ${personProfile.name_surname || '…'}</grampsjs-object-link
+        >${personProfile.name_display ||
+        `${personProfile.name_given || '…'} ${
+          personProfile.name_surname || '…'
+        }`}</grampsjs-object-link
       >
     </span>
     ${personProfile?.birth?.date
@@ -57,8 +59,9 @@ export function showObject(type, obj, strings) {
           color="currentColor"
         ></grampsjs-icon>
         <grampsjs-object-link object-type="person" gramps-id="${obj.gramps_id}"
-          >${obj?.profile?.name_given || html`&hellip;`}
-          ${obj?.profile?.name_surname || html`&hellip;`}
+          >${obj?.profile?.name_display ||
+          html`${obj?.profile?.name_given || html`&hellip;`}
+          ${obj?.profile?.name_surname || html`&hellip;`}`}
         </grampsjs-object-link>
       `
     case 'family':
