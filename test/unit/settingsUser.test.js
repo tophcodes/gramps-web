@@ -155,3 +155,32 @@ describe('name format setting', () => {
     expect(element._nameFormats.map(format => format.number)).toEqual([0, 1])
   })
 })
+
+describe('name format editor', () => {
+  it('creates a format and reloads the list', async () => {
+    const element = new GrampsjsViewSettingsUser()
+    const apiPost = vi.fn().mockResolvedValue({data: {number: -2}})
+    const apiGet = vi.fn().mockResolvedValue({data: []})
+    element.appState = {apiPost, apiGet, settings: {}}
+
+    await element._addNameFormat('Vietnamese', '%l %f')
+
+    expect(apiPost).toHaveBeenCalledWith('/api/name-formats/', {
+      name: 'Vietnamese',
+      format: '%l %f',
+    })
+    expect(apiGet).toHaveBeenCalledWith('/api/name-formats/')
+  })
+
+  it('removes a format and reloads the list', async () => {
+    const element = new GrampsjsViewSettingsUser()
+    const apiDelete = vi.fn().mockResolvedValue({data: {number: -2}})
+    const apiGet = vi.fn().mockResolvedValue({data: []})
+    element.appState = {apiDelete, apiGet, settings: {}}
+
+    await element._deleteNameFormat(-2)
+
+    expect(apiDelete).toHaveBeenCalledWith('/api/name-formats/-2')
+    expect(apiGet).toHaveBeenCalledWith('/api/name-formats/')
+  })
+})

@@ -3,6 +3,7 @@ import {
   translate,
   personTitleFromProfile,
   personProfileDisplayName,
+  customNameFormats,
   personDisplayName,
   reportSelectItemLabel,
   reportSelectItemValue,
@@ -442,5 +443,21 @@ describe('apiVersionAtLeast', () => {
 
   it('defaults patch to 0 when not specified', () => {
     expect(apiVersionAtLeast(dbInfo('3.9.0'), 3, 9)).to.be.true
+  })
+})
+
+describe('customNameFormats', () => {
+  it('keeps only the user-defined formats', () => {
+    expect(
+      customNameFormats([
+        {number: 0, name: 'Default'},
+        {number: 1, name: 'Surname, Given'},
+        {number: -1, name: 'Mine'},
+      ]).map(format => format.number)
+    ).to.deep.equal([-1])
+  })
+
+  it('tolerates a missing list', () => {
+    expect(customNameFormats(undefined)).to.deep.equal([])
   })
 })

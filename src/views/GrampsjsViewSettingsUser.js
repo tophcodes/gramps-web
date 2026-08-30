@@ -26,7 +26,7 @@ import {
   TREE_CONFIG_PRIMARY_COLOR,
   TREE_CONFIG_SECONDARY_COLOR,
 } from '../api.js'
-import {apiVersionAtLeast, fireEvent} from '../util.js'
+import {apiVersionAtLeast, customNameFormats, fireEvent} from '../util.js'
 import {applyScheme, DEFAULT_PRIMARY, DEFAULT_SECONDARY} from '../theme.js'
 import {DEFAULT_TREE_VIEW, TREE_VIEWS} from '../treeDefaults.js'
 
@@ -182,6 +182,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
         ${this.renderLangSelect()}
         <h3>${this._('Select theme')}</h3>
         ${this.renderThemeSelect()} ${this.renderNameFormatSelect()}
+        ${this.renderNameFormatEditor()}
         <h3>${this._('Family tree preferences')}</h3>
         ${this.renderTreePreferences()}
       </grampsjs-collapsible-section>
@@ -283,6 +284,80 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
         )}
       </md-filled-select>
     `
+  }
+
+  renderNameFormatEditor() {
+    const formats = customNameFormats(this._nameFormats)
+    return html`
+      <h4>${this._('Custom name formats')}</h4>
+      ${formats.length === 0
+        ? html`<p class="hint">${this._('No custom formats defined')}</p>`
+        : html`
+            <md-list>
+              ${formats.map(
+                format => html`
+                  <md-list-item>
+                    <div slot="headline">${format.name}</div>
+                    <div slot="supporting-text">
+                      <code>${format.format}</code>
+                    </div>
+                    <md-text-button
+                      slot="end"
+                      @click="${() => this._deleteNameFormat(format.number)}"
+                      >${this._('_Delete')}</md-text-button
+                    >
+                  </md-list-item>
+                `
+              )}
+            </md-list>
+          `}
+      <md-filled-text-field
+        id="new-name-format-label"
+        label="${this._('Name')}"
+      ></md-filled-text-field>
+      <md-filled-text-field
+        id="new-name-format-string"
+        label="${this._('Format')}"
+        supporting-text="%l surname, %f given, %s suffix, %c call name"
+      ></md-filled-text-field>
+      <md-outlined-button @click="${this._handleAddNameFormat}"
+        >${this._('_Add')}</md-outlined-button
+      >
+    `
+  }
+
+  async _handleAddNameFormat() {
+    const label = this.renderRoot.querySelector('#new-name-format-label')
+    const format = this.renderRoot.querySelector('#new-name-format-string')
+    if (!label?.value || !format?.value) {
+      return
+    }
+    await this._addNameFormat(label.value, format.value)
+    label.value = ''
+    format.value = ''
+  }
+
+  async _addNameFormat(name, format) {
+    const data = await this.appState.apiPost('/api/name-formats/', {
+      name,
+      format,
+    })
+    if ('error' in data) {
+      this.error = true
+      this._errorMessage = data.error
+      return
+    }
+    await this._fetchNameFormats()
+  }
+
+  async _deleteNameFormat(number) {
+    const data = await this.appState.apiDelete(`/api/name-formats/${number}`)
+    if ('error' in data) {
+      this.error = true
+      this._errorMessage = data.error
+      return
+    }
+    await this._fetchNameFormats()
   }
 
   async _fetchNameFormats() {

@@ -96,6 +96,12 @@ export function personProfileDisplayName(profile) {
   )
 }
 
+// Gramps numbers the formats it ships from zero upwards and the user-defined
+// ones downwards, so the sign says who owns an entry.
+export function customNameFormats(formats) {
+  return (formats ?? []).filter(format => format.number < 0)
+}
+
 function displaySurname(surname) {
   return `${surname.prefix} ${surname.surname} ${surname.connector}`.trim()
 }
