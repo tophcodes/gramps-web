@@ -293,9 +293,9 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
   renderNameFormatEditor() {
     const formats = customNameFormats(this._nameFormats)
     return html`
-      <h4>${this._('Custom name formats')}</h4>
+      <h4>${this._('Display Name Editor')}</h4>
       ${formats.length === 0
-        ? html`<p class="hint">${this._('No custom formats defined')}</p>`
+        ? html`<p class="hint">${this._('None')}</p>`
         : html`
             <md-list>
               ${formats.map(

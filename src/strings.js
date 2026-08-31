@@ -1086,4 +1086,9 @@ export const grampsStrings = [
   'Maximum age for an _unmarried person',
   '_Estimate missing or inexact dates',
   '_Identify invalid dates',
+  'Name format',
+  'Display as',
+  'Display Name Editor',
+  'Format',
+  '_Add',
 ]
