@@ -83,6 +83,13 @@ export class GrampsjsPerson extends GrampsjsObject {
     if (!this.data.profile) {
       return ''
     }
+    if (this.data.profile.name_display) {
+      // The server applied the name format, suffix included.
+      return this._highlightCallName(
+        this.data.profile.name_display,
+        this.data?.primary_name?.call
+      )
+    }
     const surname = this.data.profile.name_surname || '…'
     const suffix = this.data.profile.name_suffix || ''
     const call = this.data?.primary_name?.call
@@ -99,6 +106,16 @@ export class GrampsjsPerson extends GrampsjsObject {
           `
         : given
     return html`${given} ${surname} ${suffix}`
+  }
+
+  _highlightCallName(text, call) {
+    const index = call ? text.search(call) : -1
+    if (index < 0) {
+      return html`${text}`
+    }
+    return html`${text.substring(0, index)}<span class="given-name"
+        >${text.substring(index, index + call.length)}</span
+      >${text.substring(index + call.length)}`
   }
 
   _renderBirth() {
