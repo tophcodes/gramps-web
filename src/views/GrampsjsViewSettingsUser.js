@@ -242,8 +242,10 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
         this._fetchDataLang()
       }
     }
-    if (this.active && changed.has('active')) {
+    if (this.active && (changed.has('active') || changed.has('appState'))) {
       this._maybeFetchNameFormats()
+    }
+    if (this.active && changed.has('active')) {
       this._loadAccessTokenStatusesIfNeeded(true)
     } else if (this.active && changed.has('appState')) {
       this._loadAccessTokenStatusesIfNeeded()
@@ -365,9 +367,14 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
   }
 
   _maybeFetchNameFormats() {
-    // firstUpdated can run while the view is still hidden, in which case the
-    // formats have to be fetched once it is shown.
-    if (this.active && this._nameFormats.length === 0) {
+    // firstUpdated can run while the view is still hidden, and appState can
+    // arrive after the view turns active, so this is called from both and
+    // fetches once whichever comes last.
+    if (
+      this.active &&
+      this.appState?.apiGet &&
+      this._nameFormats.length === 0
+    ) {
       this._fetchNameFormats()
     }
   }

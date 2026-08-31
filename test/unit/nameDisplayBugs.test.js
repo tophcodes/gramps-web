@@ -62,3 +62,29 @@ describe('settings load the formats when the view is shown', () => {
     expect(element._fetchNameFormats).not.toHaveBeenCalled()
   })
 })
+
+describe('format loading survives a late appState', () => {
+  it('attempts no fetch while appState is still missing', () => {
+    const element = new GrampsjsViewSettingsUser()
+    element.active = true
+    element.appState = undefined
+    element._fetchNameFormats = vi.fn()
+
+    element._maybeFetchNameFormats()
+
+    // An async call here would reject silently and never be retried.
+    expect(element._fetchNameFormats).not.toHaveBeenCalled()
+  })
+
+  it('fetches once appState has arrived', () => {
+    const element = new GrampsjsViewSettingsUser()
+    element.active = true
+    element.appState = undefined
+    element._maybeFetchNameFormats()
+
+    element.appState = {apiGet: vi.fn().mockResolvedValue({data: []})}
+    element._maybeFetchNameFormats()
+
+    expect(element.appState.apiGet).toHaveBeenCalledWith('/api/name-formats/')
+  })
+})
