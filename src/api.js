@@ -84,7 +84,11 @@ export function updateSettings(settings, tree = false) {
   const treeId = getTreeId() || 'unknown'
   const existingSettings = tree ? parsedSettings?.[treeId] : parsedSettings
   const finalSettings = {...existingSettings, ...settings}
-  const data = tree ? {[treeId]: finalSettings} : finalSettings
+  // Writing only this tree's entry would drop every other tree, including
+  // the real one whenever the token is gone and treeId falls back to unknown.
+  const data = tree
+    ? {...parsedSettings, [treeId]: finalSettings}
+    : finalSettings
   localStorage.setItem(key, JSON.stringify(data))
   fireEvent(window, 'settings:changed')
 }
