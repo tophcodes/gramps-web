@@ -231,7 +231,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
     if (this.active) {
       this._fetchOwnUserDetails()
       this._loadAccessTokenStatusesIfNeeded()
-      this._fetchNameFormats()
+      this._maybeFetchNameFormats()
     }
   }
 
@@ -243,6 +243,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
       }
     }
     if (this.active && changed.has('active')) {
+      this._maybeFetchNameFormats()
       this._loadAccessTokenStatusesIfNeeded(true)
     } else if (this.active && changed.has('appState')) {
       this._loadAccessTokenStatusesIfNeeded()
@@ -273,6 +274,9 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
         label="${this._('Name format')}"
         @change="${this._handleNameFormatSelected}"
       >
+        <md-select-option value="" ?selected="${!nameFormat}"
+          >${this._('Default')}</md-select-option
+        >
         ${this._nameFormats.map(
           format => html`
             <md-select-option
@@ -358,6 +362,14 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
       return
     }
     await this._fetchNameFormats()
+  }
+
+  _maybeFetchNameFormats() {
+    // firstUpdated can run while the view is still hidden, in which case the
+    // formats have to be fetched once it is shown.
+    if (this.active && this._nameFormats.length === 0) {
+      this._fetchNameFormats()
+    }
   }
 
   async _fetchNameFormats() {
