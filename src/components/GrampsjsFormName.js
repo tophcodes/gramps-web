@@ -5,6 +5,8 @@ element for editing a name
 import {html, css, LitElement} from 'lit'
 import '@material/mwc-textfield'
 import '@material/web/iconbutton/icon-button.js'
+import '@material/web/select/filled-select'
+import '@material/web/select/select-option'
 
 import {
   mdiArrowDown,
@@ -22,7 +24,7 @@ import './GrampsjsFormString.js'
 import './GrampsjsFormSurname.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
-class GrampsjsFormName extends GrampsjsAppStateMixin(LitElement) {
+export class GrampsjsFormName extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
     return [
       sharedStyles,
@@ -61,6 +63,7 @@ class GrampsjsFormName extends GrampsjsAppStateMixin(LitElement) {
       types: {type: Object},
       typesLocale: {type: Object},
       origintype: {type: Boolean},
+      _nameFormats: {type: Array},
     }
   }
 
@@ -72,6 +75,7 @@ class GrampsjsFormName extends GrampsjsAppStateMixin(LitElement) {
     this.typesLocale = {}
     this.loadingTypes = false
     this.origintype = false
+    this._nameFormats = []
   }
 
   render() {
@@ -84,6 +88,26 @@ class GrampsjsFormName extends GrampsjsAppStateMixin(LitElement) {
           value="${this.data.title || ''}"
           label="${this._('Title')}"
         ></grampsjs-form-string>
+      </p>
+      <p class="${classMap({hide: !this.showMore})}">
+        <md-filled-select
+          id="display-as"
+          label="${this._('Display as')}"
+          @change="${this._handleDisplayAsChanged}"
+        >
+          <md-select-option value="0" ?selected="${!this.data.display_as}"
+            >${this._('Default')}</md-select-option
+          >
+          ${this._nameFormats.map(
+            format => html`
+              <md-select-option
+                value="${format.number}"
+                ?selected="${format.number === this.data.display_as}"
+                >${format.name}</md-select-option
+              >
+            `
+          )}
+        </md-filled-select>
       </p>
       <p>
         <grampsjs-form-string
@@ -261,6 +285,26 @@ class GrampsjsFormName extends GrampsjsAppStateMixin(LitElement) {
       ...this.data,
       surname_list: [...this.moveItem(this.data.surname_list, i, i + 1)],
     }
+  }
+
+  firstUpdated() {
+    this._fetchNameFormats()
+  }
+
+  async _fetchNameFormats() {
+    const data = await this.appState.apiGet('/api/name-formats/')
+    if ('data' in data) {
+      // Number 0 is the default entry, which this form offers on its own.
+      this._nameFormats = data.data.filter(
+        format => format.active && format.number !== 0
+      )
+    }
+  }
+
+  _handleDisplayAsChanged(e) {
+    // Gramps stores the format as a number, and 0 means no override.
+    this.data = {...this.data, display_as: Number(e.target.value)}
+    this.handleChange()
   }
 
   _handleFormData(e) {
